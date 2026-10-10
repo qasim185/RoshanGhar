@@ -6,11 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:solarcalcpk/app_state.dart';
 import 'package:solarcalcpk/main.dart';
 import 'package:solarcalcpk/screens/battery_sizer_screen.dart';
+import 'package:solarcalcpk/screens/home_screen.dart';
 import 'package:solarcalcpk/screens/inverter_checker_screen.dart';
 import 'package:solarcalcpk/screens/load_calculator_screen.dart';
 import 'package:solarcalcpk/screens/panel_sizer_screen.dart';
 import 'package:solarcalcpk/screens/roi_calculator_screen.dart';
 import 'package:solarcalcpk/services/solar_price_service.dart';
+import 'package:solarcalcpk/services/whatsapp_service.dart';
 import 'package:solarcalcpk/utils/calculations.dart';
 import 'package:solarcalcpk/widgets/app_drawer.dart';
 import 'package:solarcalcpk/widgets/result_card.dart';
@@ -230,6 +232,36 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('HomeScreen renders without overflow on 320px width including Live Market Rates button',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider(
+          create: (_) => SolarAppState(),
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+
+      // Scroll to the Live Market Rates button
+      final liveMarketBtn = find.text('Live Market Rates');
+      await tester.scrollUntilVisible(
+        liveMarketBtn,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(liveMarketBtn, findsOneWidget);
+
+      await tester.tap(liveMarketBtn);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('Pakistan Solar Market Rates'), findsOneWidget);
+    });
   });
 
   group('SolarPriceService & Live Market Rates Tests', () {
@@ -247,4 +279,60 @@ void main() {
       expect(updated, isNotEmpty);
     });
   });
+
+  group('WhatsApp Load-Sharing Tests', () {
+    test('formatLoadMessage creates correct message format without prices', () {
+      final message = WhatsAppService.formatLoadMessage(
+        loadData: {
+          'Inverter AC (1.5 Ton)': 2,
+          'Ceiling Fan (Standard)': 4,
+          'LED Bulb / Tube': 8,
+          'Zero Quantity Item': 0,
+        },
+        totalKw: 3.50,
+      );
+
+      // Verifies required opening
+      expect(
+        message,
+        contains('Assalam-o-Alaikum! I calculated my household load using RoshanGhar.'),
+      );
+      // Verifies appliances with quantities
+      expect(message, contains('• 2x Inverter AC (1.5 Ton)'));
+      expect(message, contains('• 4x Ceiling Fan (Standard)'));
+      expect(message, contains('• 8x LED Bulb / Tube'));
+      expect(message, isNot(contains('Zero Quantity Item')));
+
+      // Verifies kW total
+      expect(message, contains('3.50 kW'));
+
+      // Verifies asking for quotation / audit
+      expect(message.toLowerCase(), contains('audit and quotation'));
+
+      // STRICT PRIVACY CHECK: ensures no pricing figures or currency symbols
+      expect(message, isNot(contains('PKR')));
+      expect(message, isNot(contains('Rs')));
+      expect(message, isNot(contains('markup')));
+      expect(message, isNot(contains('Price')));
+    });
+
+    testWidgets('LoadCalculatorScreen displays Share via WhatsApp button',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider(
+          create: (_) => SolarAppState(),
+          child: const MaterialApp(home: LoadCalculatorScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final shareBtn = find.text('Share Load via WhatsApp');
+      expect(shareBtn, findsOneWidget);
+    });
+  });
 }
+

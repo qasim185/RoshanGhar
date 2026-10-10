@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../models/appliance.dart';
 import '../services/nlp_load_parser.dart';
+import '../services/whatsapp_service.dart';
 import '../widgets/admob_banner.dart';
 
 class LoadCalculatorScreen extends StatefulWidget {
@@ -33,6 +34,29 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
     {'name': 'Desktop Computer', 'watts': 250},
   ];
 
+  Future<void> _shareToWhatsApp(SolarAppState appState) async {
+    final Map<String, int> loadData = {};
+    for (final app in appState.appliances) {
+      if (app.quantity > 0) {
+        loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+      }
+    }
+    final double totalKw = appState.totalLoadWatts / 1000.0;
+    final bool success = await WhatsAppService.shareLoadToWhatsApp(
+      loadData: loadData,
+      totalKw: totalKw,
+    );
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('WhatsApp is not installed on this device.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<SolarAppState>(context);
@@ -45,6 +69,11 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
         backgroundColor: const Color(0xFF1D9E75),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.white),
+            tooltip: "Share via WhatsApp",
+            onPressed: () => _shareToWhatsApp(appState),
+          ),
           IconButton(
             icon: const Icon(Icons.auto_awesome, color: Colors.white),
             tooltip: "Quick Text Load (AI/Urdu)",
@@ -67,9 +96,9 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
           // Total load summary card
           Container(
             color: const Color(0xFF1D9E75),
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -97,7 +126,7 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
                       ),
                     ],
                   ),
-                  const Divider(height: 24, thickness: 1),
+                  const Divider(height: 16, thickness: 1),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -119,7 +148,31 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
                         ),
                       ),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF25D366),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        elevation: 1,
+                      ),
+                      icon: const Icon(Icons.share, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Share Load via WhatsApp',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      onPressed: () => _shareToWhatsApp(appState),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -129,13 +182,13 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
           Expanded(
             child: appState.appliances.isEmpty
                 ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.electric_bolt, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
+                          Icon(Icons.electric_bolt, size: 48, color: Colors.grey[400]),
+                          const SizedBox(height: 12),
                           Text(
                             appState.translate('emptyLoadText'),
                             textAlign: TextAlign.center,

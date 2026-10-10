@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../services/pdf_invoice_service.dart';
 import '../services/solar_price_service.dart';
+import '../services/whatsapp_service.dart';
 import '../widgets/admob_banner.dart';
 import '../widgets/app_drawer.dart';
 import 'battery_sizer_screen.dart';
@@ -325,117 +326,136 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showLiveMarketPricesDialog() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            return SafeArea(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 14.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Icons.trending_up, color: Color(0xFF1D9E75), size: 22),
-                          SizedBox(width: 8),
-                          Text(
-                            'Pakistan Solar Market Rates',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 20),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$_liveRatesStatus • Per-watt Tier-1 retail rates',
-                    style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
-                  ),
-                  const Divider(height: 20),
-                  ..._panelCatalog.map((p) {
-                    final isSelected = p['id'] == _selectedPanelId;
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF1D9E75).withValues(alpha: 0.08) : Colors.grey[50],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected ? const Color(0xFF1D9E75) : Colors.grey[200]!,
-                        ),
-                      ),
-                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          const Expanded(
+                            child: Row(
                               children: [
-                                Text(
-                                  p['name'] as String,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
-                                Text(
-                                  "${p['nameplateWatts']}W plate • ${p['brand']}",
-                                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                Icon(Icons.trending_up, color: Color(0xFF1D9E75), size: 22),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Pakistan Solar Market Rates',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          Text(
-                            "Rs. ${p['pricePerWatt']} / W",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              color: Color(0xFF1D9E75),
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 20),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => Navigator.pop(context),
                           ),
                         ],
                       ),
-                    );
-                  }),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1D9E75),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    icon: _isLoadingRates
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.refresh, size: 18),
-                    label: Text(_isLoadingRates ? 'Pulling Market Rates...' : 'Refresh Live Rates Now'),
-                    onPressed: _isLoadingRates
-                        ? null
-                        : () async {
-                            final messenger = ScaffoldMessenger.of(context);
-                            setSheetState(() => _isLoadingRates = true);
-                            await _loadLiveMarketRates(fetchOnline: true);
-                            setSheetState(() => _isLoadingRates = false);
-                            messenger.showSnackBar(
-                              const SnackBar(
-                                content: Text('✅ Live market rates updated & applied to calculations!'),
-                                backgroundColor: Color(0xFF1D9E75),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$_liveRatesStatus • Per-watt Tier-1 retail rates',
+                        style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Divider(height: 18),
+                      ..._panelCatalog.map((p) {
+                        final isSelected = p['id'] == _selectedPanelId;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF1D9E75).withValues(alpha: 0.08) : Colors.grey[50],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected ? const Color(0xFF1D9E75) : Colors.grey[200]!,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      p['name'] as String,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      "${p['nameplateWatts']}W plate • ${p['brand']}",
+                                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            );
-                          },
+                              const SizedBox(width: 8),
+                              Text(
+                                "Rs. ${p['pricePerWatt']} / W",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                  color: Color(0xFF1D9E75),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 14),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1D9E75),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon: _isLoadingRates
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.refresh, size: 18),
+                        label: Text(_isLoadingRates ? 'Pulling Market Rates...' : 'Refresh Live Rates Now'),
+                        onPressed: _isLoadingRates
+                            ? null
+                            : () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                setSheetState(() => _isLoadingRates = true);
+                                await _loadLiveMarketRates(fetchOnline: true);
+                                setSheetState(() => _isLoadingRates = false);
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('✅ Live market rates updated & applied to calculations!'),
+                                    backgroundColor: Color(0xFF1D9E75),
+                                  ),
+                                );
+                              },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           },
@@ -1270,6 +1290,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 6),
                         DropdownButtonFormField<String>(
                           initialValue: _selectedCity,
+                          isExpanded: true,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -1291,6 +1312,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               value: city,
                               child: Text(
                                 "$city (${_cityPSH[city]} PSH / Day Radiation)",
+                                overflow: TextOverflow.ellipsis,
                               ),
                             );
                           }).toList(),
@@ -1374,6 +1396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 6),
                         DropdownButtonFormField<String>(
                           initialValue: _selectedSlab,
+                          isExpanded: true,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -1397,6 +1420,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _activeLang == 'en'
                                     ? 'Protected Slab (<200 Units / Rs. 24)'
                                     : 'کم بجٹ سلیب (۲۰۰ سے کم و ۲۴ روپے)',
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             DropdownMenuItem(
@@ -1405,6 +1429,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _activeLang == 'en'
                                     ? 'Standard Home (200-500 Units / Rs. 48)'
                                     : 'گھریلو فل ریٹ (۲۰۰ سے ۵۰۰ و ۴۸ روپے)',
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             DropdownMenuItem(
@@ -1413,6 +1438,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _activeLang == 'en'
                                     ? 'Heavy AC Home (500-1000 Units / Rs. 62)'
                                     : 'بھاری اے سی لوڈ (۵۰۰ سے ۱۰۰۰ و ۶۲ روپے)',
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             DropdownMenuItem(
@@ -1421,6 +1447,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _activeLang == 'en'
                                     ? 'Commercial Slab (>1000 Units / Rs. 74)'
                                     : 'کمرشل دکان ریٹ (ہزار سے زائد و ۷۴ روپے)',
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -1438,15 +1465,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              _t('selectPanel').toUpperCase(),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 11,
-                                color: Color(0xFF8B7E5D),
-                                letterSpacing: 0.3,
+                            Expanded(
+                              child: Text(
+                                _t('selectPanel').toUpperCase(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 11,
+                                  color: Color(0xFF8B7E5D),
+                                  letterSpacing: 0.3,
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             InkWell(
                               onTap: _showLiveMarketPricesDialog,
                               borderRadius: BorderRadius.circular(8),
@@ -1707,28 +1739,33 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.assignment,
-                                  color: Color(0xFF4A5D4E),
-                                  size: 22,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  _activeLang == 'en'
-                                      ? 'LIVE SYSTEM PROPOSAL'
-                                      : _activeLang == 'ur'
-                                      ? 'سولر تجویزاتی رپورٹ'
-                                      : 'LIVE SYSTEM PROPOSAL',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 13,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.assignment,
                                     color: Color(0xFF4A5D4E),
-                                    letterSpacing: -0.2,
+                                    size: 22,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      _activeLang == 'en'
+                                          ? 'LIVE SYSTEM PROPOSAL'
+                                          : _activeLang == 'ur'
+                                          ? 'سولر تجویزاتی رپورٹ'
+                                          : 'LIVE SYSTEM PROPOSAL',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 13,
+                                        color: Color(0xFF4A5D4E),
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             if (_hasCustomItemizedOverrides)
                               InkWell(
@@ -2037,6 +2074,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           // Warranty dropdown
                           DropdownButtonFormField<String>(
                             initialValue: _selectedWarranty,
+                            isExpanded: true,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.black87,
@@ -2063,6 +2101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   _activeLang == 'en'
                                       ? '10-Year Complete Performance Sizing'
                                       : 'دس سالہ وارنٹی',
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               DropdownMenuItem(
@@ -2071,6 +2110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   _activeLang == 'en'
                                       ? '5-Year Standard Sizing Warranty'
                                       : 'پانچ سالہ وارنٹی',
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               DropdownMenuItem(
@@ -2079,6 +2119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   _activeLang == 'en'
                                       ? 'No Warranty Policy Clause'
                                       : 'کوئی وارنٹی نہیں ہے',
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -2283,6 +2324,72 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                           const SizedBox(height: 12),
+
+                          // WhatsApp Load-Sharing Button (Privacy Protected - No Prices)
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF25D366),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                            ),
+                            icon: const Icon(Icons.share, size: 20, color: Colors.white),
+                            label: Text(
+                              _activeLang == 'ur'
+                                  ? 'واٹس ایپ پر لوڈ شیئر کریں'
+                                  : (_activeLang == 'mix'
+                                      ? 'WhatsApp Per Load Share Karein'
+                                      : 'Share Load via WhatsApp'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                color: Colors.white,
+                              ),
+                            ),
+                            onPressed: () async {
+                              final Map<String, int> loadData = {};
+                              if (_manualInputActive) {
+                                loadData['Custom Continuous Load'] = 1;
+                              } else {
+                                if (_acCount > 0) loadData['Inverter AC (1.5 Ton)'] = _acCount;
+                                if (_fanCount > 0) loadData['Ceiling Fan (Standard)'] = _fanCount;
+                                if (_dcFanCount > 0) loadData['Solar DC Fan'] = _dcFanCount;
+                                if (_bulbCount > 0) loadData['LED Bulb / Tube'] = _bulbCount;
+                                if (_fridgeCount > 0) {
+                                  loadData[_isFridgeInverter ? 'Inverter Refrigerator' : 'Standard Refrigerator'] = _fridgeCount;
+                                }
+                                if (_ovenCount > 0) loadData['Microwave / Oven'] = _ovenCount;
+                                if (_pumpCount > 0) loadData['Water Pump'] = _pumpCount;
+
+                                if (loadData.isEmpty && appState.appliances.isNotEmpty) {
+                                  for (final app in appState.appliances) {
+                                    if (app.quantity > 0) {
+                                      loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+                                    }
+                                  }
+                                }
+                              }
+
+                              final double totalKw = activeLoadWatts / 1000.0;
+                              final success = await WhatsAppService.shareLoadToWhatsApp(
+                                loadData: loadData,
+                                totalKw: totalKw,
+                              );
+
+                              if (!success && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('WhatsApp is not installed on this device.'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 12),
                         ],
                       ),
                     ),
@@ -2404,6 +2511,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: selectedLanguage,
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Language',
                         prefixIcon: Icon(Icons.language),
@@ -2710,17 +2818,22 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                _activeLang == 'ur'
-                    ? '🛠️ مخصوص ٹولز اور چیکرز'
-                    : '🛠️ DEDICATED TOOLS & CHECKERS',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11,
-                  color: Color(0xFF4A5D4E),
-                  letterSpacing: 0.2,
+              Expanded(
+                child: Text(
+                  _activeLang == 'ur'
+                      ? '🛠️ مخصوص ٹولز اور چیکرز'
+                      : '🛠️ DEDICATED TOOLS & CHECKERS',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    color: Color(0xFF4A5D4E),
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 _activeLang == 'ur' ? 'مزید ٹولز' : 'More Tools',
                 style: const TextStyle(
