@@ -66,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const Icon(Icons.solar_power, size: 54, color: Color(0xFF1D9E75)),
         const SizedBox(height: 10),
         const Text(
-          'Welcome to SolarCalcPK',
+          'Welcome to RoshanGhar',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
         ),

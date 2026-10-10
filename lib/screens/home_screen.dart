@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state.dart';
-import '../services/n8n_audit_service.dart';
+// import '../services/n8n_audit_service.dart';
 import '../services/pdf_invoice_service.dart';
 import '../services/solar_price_service.dart';
 import '../services/whatsapp_service.dart';
@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Language state: 'mix' (Roman Urdu Mix), 'ur' (Urdu), 'en' (English)
   String _activeLang = 'mix';
   bool _didHydrateProfile = false;
+  // bool _isAuditing = false;
 
   // Appliance quantities
   int _fridgeCount = 1;
@@ -180,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Translations dictionary
   final Map<String, Map<String, String>> _labels = {
     'en': {
-      'appName': 'SolarCalcPK',
+      'appName': 'RoshanGhar',
       'tagline': 'Solar Sizing & Custom Invoice Generator',
       'easyPresets': '⚡ One-Tap Super Presets (Asaan Load)',
       'presetSmall': 'Chota Ghar (Small)',
@@ -216,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'monthlyKWh': 'Approx. Units / Month (KWh):',
     },
     'ur': {
-      'appName': 'سولر کیلکولیٹر',
+      'appName': 'روشن گھر',
       'tagline': 'سولر کیلکولیٹر اور پروفیشنل انوائس جنریٹر',
       'easyPresets': '⚡ ایک کلک آسان گھریلو پری سیٹس',
       'presetSmall': 'چھوٹا گھر (بغیر اے سی)',
@@ -252,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'monthlyKWh': 'ماہانہ بجلی یونٹس لکھیں (KWh):',
     },
     'mix': {
-      'appName': 'SolarCalcPK',
+      'appName': 'RoshanGhar',
       'tagline': 'Solar Calculator aur Pro Invoice Generator',
       'easyPresets': '⚡ Ek Click Asaan Ghar ke Presets',
       'presetSmall': 'Chota Ghar (Bina AC ke)',
@@ -2392,7 +2393,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // AI Engineering Audit Button (Queries local n8n & Ollama)
+                          // AI Engineering Audit Button (Queries local n8n & Ollama) - commented out for now
+                          /*
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF0F172A),
@@ -2403,52 +2405,87 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               elevation: 2,
                             ),
-                            icon: const Icon(
-                              Icons.psychology_outlined,
-                              size: 20,
-                              color: Color(0xFF38BDF8),
-                            ),
-                            label: const Text(
-                              'Request AI Engineering Audit',
-                              style: TextStyle(
+                            icon: _isAuditing
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.psychology_outlined,
+                                    size: 20,
+                                    color: Color(0xFF38BDF8),
+                                  ),
+                            label: Text(
+                              _isAuditing
+                                  ? 'AI Auditor analyzing Swabi 4.8 PSH data...'
+                                  : 'Request AI Engineering Audit',
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 13,
                                 color: Colors.white,
                               ),
                             ),
-                            onPressed: () async {
-                              final Map<String, int> loadData = {};
-                              if (_manualInputActive) {
-                                loadData['Custom Continuous Load'] = 1;
-                              } else {
-                                if (_acCount > 0) loadData['Inverter AC (1.5 Ton)'] = _acCount;
-                                if (_fanCount > 0) loadData['Ceiling Fan (Standard)'] = _fanCount;
-                                if (_dcFanCount > 0) loadData['Solar DC Fan'] = _dcFanCount;
-                                if (_bulbCount > 0) loadData['LED Bulb / Tube'] = _bulbCount;
-                                if (_fridgeCount > 0) {
-                                  loadData[_isFridgeInverter ? 'Inverter Refrigerator' : 'Standard Refrigerator'] = _fridgeCount;
-                                }
-                                if (_ovenCount > 0) loadData['Microwave / Oven'] = _ovenCount;
-                                if (_pumpCount > 0) loadData['Water Pump'] = _pumpCount;
+                            onPressed: _isAuditing
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _isAuditing = true;
+                                    });
+                                    try {
+                                      final Map<String, int> loadData = {};
+                                      if (_manualInputActive) {
+                                        loadData['Custom Continuous Load'] = 1;
+                                      } else {
+                                        if (_acCount > 0) loadData['Inverter AC (1.5 Ton)'] = _acCount;
+                                        if (_fanCount > 0) loadData['Ceiling Fan (Standard)'] = _fanCount;
+                                        if (_dcFanCount > 0) loadData['Solar DC Fan'] = _dcFanCount;
+                                        if (_bulbCount > 0) loadData['LED Bulb / Tube'] = _bulbCount;
+                                        if (_fridgeCount > 0) {
+                                          loadData[_isFridgeInverter ? 'Inverter Refrigerator' : 'Standard Refrigerator'] = _fridgeCount;
+                                        }
+                                        if (_ovenCount > 0) loadData['Microwave / Oven'] = _ovenCount;
+                                        if (_pumpCount > 0) loadData['Water Pump'] = _pumpCount;
 
-                                if (loadData.isEmpty && appState.appliances.isNotEmpty) {
-                                  for (final app in appState.appliances) {
-                                    if (app.quantity > 0) {
-                                      loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+                                        if (loadData.isEmpty && appState.appliances.isNotEmpty) {
+                                          for (final app in appState.appliances) {
+                                            if (app.quantity > 0) {
+                                              loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+                                            }
+                                          }
+                                        }
+                                      }
+
+                                      final double totalKw = activeLoadWatts / 1000.0;
+                                      await N8nAuditService.requestAndShowAudit(
+                                        context,
+                                        loadData: loadData,
+                                        totalKw: totalKw,
+                                      );
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Local AI Auditor unreachable. Running in offline mode.'),
+                                            backgroundColor: Colors.redAccent,
+                                            duration: Duration(seconds: 4),
+                                          ),
+                                        );
+                                      }
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() {
+                                          _isAuditing = false;
+                                        });
+                                      }
                                     }
-                                  }
-                                }
-                              }
-
-                              final double totalKw = activeLoadWatts / 1000.0;
-                              await N8nAuditService.requestAndShowAudit(
-                                context,
-                                loadData: loadData,
-                                totalKw: totalKw,
-                              );
-                            },
+                                  },
                           ),
                           const SizedBox(height: 12),
+                          */
                         ],
                       ),
                     ),

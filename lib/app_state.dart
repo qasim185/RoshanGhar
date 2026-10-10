@@ -225,7 +225,7 @@ class SolarAppState with ChangeNotifier {
 
   // Dictionaries for localized phrases
   static const Map<String, String> _englishTranslations = {
-    'appName': 'SolarCalcPK',
+    'appName': 'RoshanGhar',
     'tagline': 'Size your solar system in minutes',
     'loadCalc': 'Load Calculator',
     'batterySizer': 'Battery Sizer',
@@ -249,7 +249,7 @@ class SolarAppState with ChangeNotifier {
   };
 
   static const Map<String, String> _urduTranslations = {
-    'appName': 'سولر کیلکولیٹر',
+    'appName': 'روشن گھر',
     'tagline': 'اپنے سولر سسٹم کا سائز منٹوں میں معلوم کریں',
     'loadCalc': 'لوڈ کیلکولیٹر',
     'batterySizer': 'بیٹری سائزنگ',

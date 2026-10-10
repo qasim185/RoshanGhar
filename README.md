@@ -1,4 +1,4 @@
-# RoshanGhar (SolarCalc PK) ☀️
+# RoshanGhar ☀️
 
 A smart, transparent, offline-first solar sizing and proposal engine for Pakistan.
 

@@ -11,18 +11,18 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => SolarAppState(),
-      child: const SolarCalcApp(),
+      child: const RoshanGharApp(),
     ),
   );
 }
 
-class SolarCalcApp extends StatelessWidget {
-  const SolarCalcApp({super.key});
+class RoshanGharApp extends StatelessWidget {
+  const RoshanGharApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SolarCalcPK',
+      title: 'RoshanGhar',
       debugShowCheckedModeBanner: false,
 
       // Elegant Solar-Teal Emerald theme profile configuration matching Material 3 patterns
@@ -84,3 +84,6 @@ class SolarCalcApp extends StatelessWidget {
     );
   }
 }
+
+// Backward-compatibility alias
+typedef SolarCalcApp = RoshanGharApp;

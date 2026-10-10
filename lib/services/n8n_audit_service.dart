@@ -9,13 +9,23 @@ import 'package:http/http.dart' as http;
 /// Service connecting RoshanGhar with a local n8n instance and Ollama (qwen3.5:4b)
 /// for solar engineering load audits.
 class N8nAuditService {
-  /// Default endpoint for Android emulator.
+  /// Default endpoint for Android emulator (forwards 10.0.2.2 to host's 127.0.0.1:5678).
   static const String defaultAndroidEmulatorUrl =
       'http://10.0.2.2:5678/webhook-test/solar-audit';
+
+  /// Default endpoint for physical device on the local network (this machine's Wi-Fi IP).
+  static const String defaultPhysicalDeviceUrl =
+      'http://192.168.95.30:5678/webhook-test/solar-audit';
 
   /// Default endpoint for local machine (Windows / Desktop).
   static const String defaultLocalhostUrl =
       'http://127.0.0.1:5678/webhook-test/solar-audit';
+
+  /// Machine local IP for physical devices.
+  static String physicalDeviceIp = '192.168.95.30';
+
+  /// Flag indicating whether the app is running on a physical mobile device.
+  static bool isPhysicalDevice = false;
 
   /// User-configurable custom endpoint URL.
   static String? customEndpoint;
@@ -32,13 +42,17 @@ class N8nAuditService {
             defaultTargetPlatform == TargetPlatform.linux)) {
       return defaultLocalhostUrl;
     }
+    // Physical mobile device on local Wi-Fi
+    if (isPhysicalDevice) {
+      return 'http://$physicalDeviceIp:5678/webhook-test/solar-audit';
+    }
     // Android emulator forwards 10.0.2.2 to host's 127.0.0.1
     return defaultAndroidEmulatorUrl;
   }
 
   /// Sends appliance load breakdown and total peak kW to the local n8n AI Auditor webhook.
   ///
-  /// Enforces a strict 15-second timeout.
+  /// Enforces a strict 10-second timeout so the UI doesn't hang if the connection drops.
   /// Returns the `ai_audit` text if successful, or `null` if unreachable, timed out, or invalid.
   static Future<String?> requestAudit({
     required Map<String, int> loadData,
@@ -75,7 +89,7 @@ class N8nAuditService {
               body: jsonEncode(payload),
             );
 
-      final response = await postFuture.timeout(const Duration(seconds: 15));
+      final response = await postFuture.timeout(const Duration(seconds: 10));
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final bodyText = response.body.trim();
@@ -131,7 +145,7 @@ class N8nAuditService {
         return null;
       }
     } on TimeoutException catch (e) {
-      debugPrint('N8nAuditService: Request timed out after 15 seconds: $e');
+      debugPrint('N8nAuditService: Request timed out after 10 seconds: $e');
       return null;
     } on SocketException catch (e) {
       debugPrint('N8nAuditService: SocketException (n8n unreachable): $e');
@@ -177,9 +191,9 @@ class N8nAuditService {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Requesting AI Engineering Audit...',
+                  'AI Auditor analyzing Swabi 4.8 PSH data...',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF111827),
                   ),
@@ -202,27 +216,41 @@ class N8nAuditService {
     );
 
     // 2. Perform the audit request
-    final String? auditReview = await requestAudit(
-      loadData: loadData,
-      totalKw: totalKw,
-    );
-
-    // 3. Ensure context is still active
-    if (!context.mounted) return;
-    Navigator.of(context, rootNavigator: true).pop(); // Dismiss loading dialog
-
-    // 4. Show audit review or SnackBar
-    if (auditReview != null && auditReview.trim().isNotEmpty) {
-      showAuditModalSheet(
-        context,
-        auditReview: auditReview,
-        totalKw: totalKw,
+    try {
+      final String? auditReview = await requestAudit(
         loadData: loadData,
+        totalKw: totalKw,
       );
-    } else {
+
+      // 3. Ensure context is still active
+      if (!context.mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // Dismiss loading dialog
+
+      // 4. Show audit review or SnackBar
+      if (auditReview != null && auditReview.trim().isNotEmpty) {
+        showAuditModalSheet(
+          context,
+          auditReview: auditReview,
+          totalKw: totalKw,
+          loadData: loadData,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Local AI Auditor unreachable. Running in offline mode.'),
+            backgroundColor: Colors.redAccent,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      try {
+        Navigator.of(context, rootNavigator: true).pop();
+      } catch (_) {}
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Local AI Auditor unreachable. Ensure n8n is running.'),
+          content: Text('Local AI Auditor unreachable. Running in offline mode.'),
           backgroundColor: Colors.redAccent,
           duration: Duration(seconds: 4),
         ),
@@ -297,7 +325,7 @@ class N8nAuditService {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'AI Engineering Audit',
+                          '🤖 AI Engineering Audit',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,

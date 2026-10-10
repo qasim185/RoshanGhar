@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../models/appliance.dart';
-import '../services/n8n_audit_service.dart';
+// import '../services/n8n_audit_service.dart';
 import '../services/nlp_load_parser.dart';
 import '../services/whatsapp_service.dart';
 import '../widgets/admob_banner.dart';
@@ -15,6 +15,8 @@ class LoadCalculatorScreen extends StatefulWidget {
 }
 
 class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
+  // bool _isAuditing = false;
+
   // Preset list of common appliances in Gulf/Pakistani markets
   final List<Map<String, dynamic>> _presets = [
     {'name': 'LED Bulb / Tube', 'watts': 12},
@@ -58,20 +60,44 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
     }
   }
 
+  /*
   Future<void> _requestAiAudit(SolarAppState appState) async {
-    final Map<String, int> loadData = {};
-    for (final app in appState.appliances) {
-      if (app.quantity > 0) {
-        loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+    if (_isAuditing) return;
+    setState(() {
+      _isAuditing = true;
+    });
+    try {
+      final Map<String, int> loadData = {};
+      for (final app in appState.appliances) {
+        if (app.quantity > 0) {
+          loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+        }
+      }
+      final double totalKw = appState.totalLoadWatts / 1000.0;
+      await N8nAuditService.requestAndShowAudit(
+        context,
+        loadData: loadData,
+        totalKw: totalKw,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Local AI Auditor unreachable. Running in offline mode.'),
+            backgroundColor: Colors.redAccent,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAuditing = false;
+        });
       }
     }
-    final double totalKw = appState.totalLoadWatts / 1000.0;
-    await N8nAuditService.requestAndShowAudit(
-      context,
-      loadData: loadData,
-      totalKw: totalKw,
-    );
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +215,7 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
                       onPressed: () => _shareToWhatsApp(appState),
                     ),
                   ),
+                  /*
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
@@ -202,21 +229,34 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         elevation: 1,
                       ),
-                      icon: const Icon(
-                        Icons.psychology_outlined,
-                        size: 18,
-                        color: Color(0xFF38BDF8),
-                      ),
-                      label: const Text(
-                        'Request AI Engineering Audit',
-                        style: TextStyle(
+                      icon: _isAuditing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+                              ),
+                            )
+                          : const Icon(
+                              Icons.psychology_outlined,
+                              size: 18,
+                              color: Color(0xFF38BDF8),
+                            ),
+                      label: Text(
+                        _isAuditing
+                            ? 'AI Auditor analyzing Swabi 4.8 PSH data...'
+                            : 'Request AI Engineering Audit',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      onPressed: () => _requestAiAudit(appState),
+                      onPressed: _isAuditing ? null : () => _requestAiAudit(appState),
                     ),
                   ),
+                  */
                 ],
               ),
             ),

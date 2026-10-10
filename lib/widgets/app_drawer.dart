@@ -62,7 +62,7 @@ class AppDrawer extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'SolarCalcPK',
+                              'RoshanGhar',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
@@ -261,7 +261,7 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(height: 12),
             const Center(
               child: Text(
-                'SolarCalcPK v1.0.0',
+                'RoshanGhar v1.0.0',
                 style: TextStyle(fontSize: 11, color: Colors.grey),
               ),
             ),

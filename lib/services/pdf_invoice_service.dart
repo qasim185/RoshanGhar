@@ -629,7 +629,7 @@ class PdfInvoiceService {
       final sanitizedName = clientName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => pdf.save(),
-        name: 'SolarCalc_Proposal_${sanitizedName.isEmpty ? "Client" : sanitizedName}.pdf',
+        name: 'RoshanGhar_Proposal_${sanitizedName.isEmpty ? "Client" : sanitizedName}.pdf',
       );
     } catch (e) {
       debugPrint("PDF generation layout aborted: $e");

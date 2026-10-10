@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:solarcalcpk/services/nlp_load_parser.dart';
-import 'package:solarcalcpk/services/lmstudio_service.dart';
+import 'package:roshanghar/services/nlp_load_parser.dart';
+import 'package:roshanghar/services/lmstudio_service.dart';
 
 void main() {
   group('NlpLoadParser - Robust Edge NLP Engine', () {

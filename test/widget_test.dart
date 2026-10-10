@@ -3,19 +3,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:solarcalcpk/app_state.dart';
-import 'package:solarcalcpk/main.dart';
-import 'package:solarcalcpk/screens/battery_sizer_screen.dart';
-import 'package:solarcalcpk/screens/home_screen.dart';
-import 'package:solarcalcpk/screens/inverter_checker_screen.dart';
-import 'package:solarcalcpk/screens/load_calculator_screen.dart';
-import 'package:solarcalcpk/screens/panel_sizer_screen.dart';
-import 'package:solarcalcpk/screens/roi_calculator_screen.dart';
-import 'package:solarcalcpk/services/solar_price_service.dart';
-import 'package:solarcalcpk/services/whatsapp_service.dart';
-import 'package:solarcalcpk/utils/calculations.dart';
-import 'package:solarcalcpk/widgets/app_drawer.dart';
-import 'package:solarcalcpk/widgets/result_card.dart';
+import 'package:roshanghar/app_state.dart';
+import 'package:roshanghar/main.dart';
+import 'package:roshanghar/screens/battery_sizer_screen.dart';
+import 'package:roshanghar/screens/home_screen.dart';
+import 'package:roshanghar/screens/inverter_checker_screen.dart';
+import 'package:roshanghar/screens/load_calculator_screen.dart';
+import 'package:roshanghar/screens/panel_sizer_screen.dart';
+import 'package:roshanghar/screens/roi_calculator_screen.dart';
+import 'package:roshanghar/services/solar_price_service.dart';
+import 'package:roshanghar/services/whatsapp_service.dart';
+import 'package:roshanghar/utils/calculations.dart';
+import 'package:roshanghar/widgets/app_drawer.dart';
+import 'package:roshanghar/widgets/result_card.dart';
 
 void main() {
   setUp(() {
@@ -26,16 +26,16 @@ void main() {
     });
   });
 
-  testWidgets('SolarCalc app renders smoke test', (WidgetTester tester) async {
+  testWidgets('RoshanGhar app renders smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(
       ChangeNotifierProvider(
         create: (_) => SolarAppState(),
-        child: const SolarCalcApp(),
+        child: const RoshanGharApp(),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('SolarCalcPK'), findsWidgets);
+    expect(find.textContaining('RoshanGhar'), findsWidgets);
     expect(find.text('🛠️ DEDICATED TOOLS & CHECKERS'), findsOneWidget);
   });
 
@@ -316,7 +316,7 @@ void main() {
       expect(message, isNot(contains('Price')));
     });
 
-    testWidgets('LoadCalculatorScreen displays Share via WhatsApp button and AI Audit button',
+    testWidgets('LoadCalculatorScreen displays Share via WhatsApp button',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1.0;
@@ -333,10 +333,13 @@ void main() {
       final shareBtn = find.text('Share Load via WhatsApp');
       expect(shareBtn, findsOneWidget);
 
-      final auditBtn = find.text('Request AI Engineering Audit');
-      expect(auditBtn, findsOneWidget);
+      // AI Engineering audit button is temporarily commented out
+      // final auditBtn = find.text('Request AI Engineering Audit');
+      // expect(auditBtn, findsOneWidget);
     });
 
+    // AI Engineering audit button is temporarily commented out
+    /*
     testWidgets('HomeScreen calculation results displays Request AI Engineering Audit button',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(360, 1200);
@@ -351,14 +354,22 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      for (int i = 0; i < 6; i++) {
-        await tester.drag(find.byType(ListView).first, const Offset(0, -800));
-        await tester.pumpAndSettle();
-      }
+      final verticalList = find.byWidgetPredicate((w) => w is ListView && w.scrollDirection == Axis.vertical);
+      await tester.drag(verticalList, const Offset(0, -3000));
+      await tester.pumpAndSettle();
+
+      final proDetailsTile = find.byType(ExpansionTile);
+      await tester.tap(proDetailsTile);
+      await tester.pumpAndSettle();
+
+      // Scroll inside to ensure the button is visible
+      await tester.drag(verticalList, const Offset(0, -1000));
+      await tester.pumpAndSettle();
 
       final auditBtn = find.text('Request AI Engineering Audit');
       expect(auditBtn, findsOneWidget);
     });
+    */
   });
 }
 

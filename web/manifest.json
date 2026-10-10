@@ -1,11 +1,11 @@
 {
-    "name": "solarcalcpk",
-    "short_name": "solarcalcpk",
+    "name": "RoshanGhar",
+    "short_name": "RoshanGhar",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "RoshanGhar - Smart Solar Engineering & ROI Auditor for Pakistan.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

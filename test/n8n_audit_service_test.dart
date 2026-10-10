@@ -2,13 +2,20 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:solarcalcpk/services/n8n_audit_service.dart';
+import 'package:roshanghar/services/n8n_audit_service.dart';
 
 void main() {
   group('N8nAuditService Unit Tests', () {
     test('Default endpoint resolves appropriately', () {
       final endpoint = N8nAuditService.endpoint;
       expect(endpoint.contains('webhook-test/solar-audit'), isTrue);
+    });
+
+    test('Physical device endpoint resolves with local IP', () {
+      N8nAuditService.isPhysicalDevice = true;
+      expect(N8nAuditService.endpoint, contains('192.168.95.30:5678/webhook-test/solar-audit'));
+      // Reset
+      N8nAuditService.isPhysicalDevice = false;
     });
 
     test('Custom endpoint override works', () {
