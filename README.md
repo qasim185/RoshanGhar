@@ -3,11 +3,27 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart)](https://dart.dev)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Google%20Drive-E040FB?logo=google-drive&logoColor=white)](https://drive.google.com/drive/folders/1MZqfQNH0GD1WS7Zor_VbcXOIl7jqOF0_?usp=drive_link)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests Passing](https://img.shields.io/badge/Tests-35%20Passed-1D9E75?logo=checkmarx)](test/)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-4CAF50)]()
 
 **RoshanGhar** is a transparent, offline-first solar engineering and financial calculation application purpose-built for Pakistani homeowners, businesses, and electricians. It demystifies solar system sizing by eliminating predatory installer markups and providing rigorous, deterministic engineering math tailored to Pakistan's climate, grid tariffs, and solar irradiance.
+
+---
+
+## 🎬 Live Demo & Video Walkthrough
+
+Watch the complete demonstration of RoshanGhar in action:
+👉 **[Watch Live Demo & Video on Google Drive](https://drive.google.com/drive/folders/1MZqfQNH0GD1WS7Zor_VbcXOIl7jqOF0_?usp=drive_link)**
+
+Key walkthrough highlights:
+* **Full Onboarding Flow**: Multi-lingual selection (English, Urdu, and Roman Urdu Mix).
+* **Live Load Profiling**: Dynamic appliance addition (Inverter ACs, DC fans, water pumps, refrigerators).
+* **Smart Battery Sizing**: Chemistry-specific DoD (LiFePO4, Tubular, AGM) and wiring topologies.
+* **City PSH Solar Sizing**: Real regional sun-hours calculation with system derating.
+* **Inverter Headroom Checker & ROI Payback**: Financial savings and surge trip prevention.
+* **One-Tap Installer Handoff**: Auto-generated WhatsApp dispatch format and on-device PDF invoice / Bill of Materials (BOM).
 
 ---
 
