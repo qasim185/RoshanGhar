@@ -351,8 +351,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.drag(find.byType(ListView).first, const Offset(0, -1500));
-      await tester.pumpAndSettle();
+      for (int i = 0; i < 6; i++) {
+        await tester.drag(find.byType(ListView).first, const Offset(0, -800));
+        await tester.pumpAndSettle();
+      }
 
       final auditBtn = find.text('Request AI Engineering Audit');
       expect(auditBtn, findsOneWidget);
