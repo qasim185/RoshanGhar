@@ -1,6 +1,16 @@
-# solarcalcpk
+# RoshanGhar (SolarCalc PK) ☀️
 
-A new Flutter project.
+A smart, transparent, offline-first solar sizing and proposal engine for Pakistan.
+
+## 🧠 The Solar Crisis & RoshanGhar Solution
+
+Here is a breakdown of the current predatory solar market in Pakistan, and how RoshanGhar solves it:
+
+### The Problem
+![Solar Market Problem](docs/problemstatement.svg)
+
+### The RoshanGhar Solution
+![RoshanGhar Solution](docs/mindmap.svg)
 
 ## Getting Started
 
