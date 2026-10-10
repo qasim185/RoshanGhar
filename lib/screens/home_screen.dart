@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state.dart';
+import '../services/n8n_audit_service.dart';
 import '../services/pdf_invoice_service.dart';
 import '../services/solar_price_service.dart';
 import '../services/whatsapp_service.dart';
@@ -2387,6 +2388,64 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 );
                               }
+                            },
+                          ),
+                          const SizedBox(height: 12),
+
+                          // AI Engineering Audit Button (Queries local n8n & Ollama)
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0F172A),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                            ),
+                            icon: const Icon(
+                              Icons.psychology_outlined,
+                              size: 20,
+                              color: Color(0xFF38BDF8),
+                            ),
+                            label: const Text(
+                              'Request AI Engineering Audit',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                color: Colors.white,
+                              ),
+                            ),
+                            onPressed: () async {
+                              final Map<String, int> loadData = {};
+                              if (_manualInputActive) {
+                                loadData['Custom Continuous Load'] = 1;
+                              } else {
+                                if (_acCount > 0) loadData['Inverter AC (1.5 Ton)'] = _acCount;
+                                if (_fanCount > 0) loadData['Ceiling Fan (Standard)'] = _fanCount;
+                                if (_dcFanCount > 0) loadData['Solar DC Fan'] = _dcFanCount;
+                                if (_bulbCount > 0) loadData['LED Bulb / Tube'] = _bulbCount;
+                                if (_fridgeCount > 0) {
+                                  loadData[_isFridgeInverter ? 'Inverter Refrigerator' : 'Standard Refrigerator'] = _fridgeCount;
+                                }
+                                if (_ovenCount > 0) loadData['Microwave / Oven'] = _ovenCount;
+                                if (_pumpCount > 0) loadData['Water Pump'] = _pumpCount;
+
+                                if (loadData.isEmpty && appState.appliances.isNotEmpty) {
+                                  for (final app in appState.appliances) {
+                                    if (app.quantity > 0) {
+                                      loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+                                    }
+                                  }
+                                }
+                              }
+
+                              final double totalKw = activeLoadWatts / 1000.0;
+                              await N8nAuditService.requestAndShowAudit(
+                                context,
+                                loadData: loadData,
+                                totalKw: totalKw,
+                              );
                             },
                           ),
                           const SizedBox(height: 12),

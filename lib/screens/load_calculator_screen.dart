@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../models/appliance.dart';
+import '../services/n8n_audit_service.dart';
 import '../services/nlp_load_parser.dart';
 import '../services/whatsapp_service.dart';
 import '../widgets/admob_banner.dart';
@@ -55,6 +56,21 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _requestAiAudit(SolarAppState appState) async {
+    final Map<String, int> loadData = {};
+    for (final app in appState.appliances) {
+      if (app.quantity > 0) {
+        loadData[app.name] = (loadData[app.name] ?? 0) + app.quantity;
+      }
+    }
+    final double totalKw = appState.totalLoadWatts / 1000.0;
+    await N8nAuditService.requestAndShowAudit(
+      context,
+      loadData: loadData,
+      totalKw: totalKw,
+    );
   }
 
   @override
@@ -171,6 +187,34 @@ class _LoadCalculatorScreenState extends State<LoadCalculatorScreen> {
                         ),
                       ),
                       onPressed: () => _shareToWhatsApp(appState),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        elevation: 1,
+                      ),
+                      icon: const Icon(
+                        Icons.psychology_outlined,
+                        size: 18,
+                        color: Color(0xFF38BDF8),
+                      ),
+                      label: const Text(
+                        'Request AI Engineering Audit',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      onPressed: () => _requestAiAudit(appState),
                     ),
                   ),
                 ],

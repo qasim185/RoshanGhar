@@ -316,7 +316,7 @@ void main() {
       expect(message, isNot(contains('Price')));
     });
 
-    testWidgets('LoadCalculatorScreen displays Share via WhatsApp button',
+    testWidgets('LoadCalculatorScreen displays Share via WhatsApp button and AI Audit button',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1.0;
@@ -332,6 +332,30 @@ void main() {
 
       final shareBtn = find.text('Share Load via WhatsApp');
       expect(shareBtn, findsOneWidget);
+
+      final auditBtn = find.text('Request AI Engineering Audit');
+      expect(auditBtn, findsOneWidget);
+    });
+
+    testWidgets('HomeScreen calculation results displays Request AI Engineering Audit button',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider(
+          create: (_) => SolarAppState(),
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -1500));
+      await tester.pumpAndSettle();
+
+      final auditBtn = find.text('Request AI Engineering Audit');
+      expect(auditBtn, findsOneWidget);
     });
   });
 }
