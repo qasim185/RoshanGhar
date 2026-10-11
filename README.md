@@ -6,7 +6,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Google%20Drive-E040FB?logo=google-drive&logoColor=white)](https://drive.google.com/drive/folders/1MZqfQNH0GD1WS7Zor_VbcXOIl7jqOF0_?usp=drive_link)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests Passing](https://img.shields.io/badge/Tests-35%20Passed-1D9E75?logo=checkmarx)](test/)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-4CAF50)]()
+[![Platform](https://img.shields.io/badge/Platform-Android-4CAF50)]()
 
 **RoshanGhar** is a transparent, offline-first solar engineering and financial calculation application purpose-built for Pakistani homeowners, businesses, and electricians. It demystifies solar system sizing by eliminating predatory installer markups and providing rigorous, deterministic engineering math tailored to Pakistan's climate, grid tariffs, and solar irradiance.
 
@@ -167,7 +167,7 @@ dart analyze
 
 ### Prerequisites
 * [Flutter SDK](https://docs.flutter.dev/get-started/install) (`^3.12.0` or higher)
-* Android Studio / Xcode / VS Code with Flutter extension
+* Android Studio / VS Code with Flutter extension
 
 ### Installation
 
